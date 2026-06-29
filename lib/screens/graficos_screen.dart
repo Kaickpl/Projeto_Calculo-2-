@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -40,6 +42,12 @@ class GraficosScreen extends StatelessWidget {
         final rTexto = formatDec(r, 3);
         final pTexto = p.toStringAsFixed(0);
         final tTexto = model.periodoT.toString();
+
+        // ─────── etapas intermediárias do cálculo ───────
+        final double expoente = r * t; // r·T
+        final double expValor = math.exp(expoente); // e^(r·T)
+        final double termoLinear = p * t; // P·T
+        final double termoQuadratico = p * r * t * t / 2; // P·r·T²/2
 
         return SingleChildScrollView(
           padding: const EdgeInsets.all(16),
@@ -149,7 +157,72 @@ class GraficosScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
 
-              // ─────────────── caixa de fórmula ───────────────
+              // ─────────────── caixas de fórmula: cálculo detalhado ───────────────
+              FormulaCard(
+                title: 'Montante simples — M_s(T)',
+                accentColor: kAzul,
+                lines: [
+                  const FormulaLine(
+                    'M_s(t) = P·(1 + r·t)',
+                    label: 'Função original',
+                  ),
+                  FormulaLine(
+                    'M_s($tTexto) = $pTexto·(1 + $rTexto·$tTexto)',
+                    label: 'Substituindo t = T',
+                  ),
+                  FormulaLine(
+                    'M_s($tTexto) = ${formatMoeda(msT)}',
+                    label: 'Resultado',
+                    highlight: true,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              FormulaCard(
+                title: 'Montante composto — M_c(T)',
+                accentColor: kVerde,
+                lines: [
+                  const FormulaLine(
+                    'M_c(t) = P·e^(r·t)',
+                    label: 'Função original',
+                  ),
+                  FormulaLine(
+                    'M_c($tTexto) = $pTexto·e^($rTexto·$tTexto)',
+                    label: 'Substituindo t = T',
+                  ),
+                  FormulaLine(
+                    'e^($rTexto·$tTexto) ≈ ${formatDec(expValor, 4)}',
+                    label: 'Calculando a exponencial',
+                  ),
+                  FormulaLine(
+                    'M_c($tTexto) = $pTexto × ${formatDec(expValor, 4)} '
+                        '= ${formatMoeda(mcT)}',
+                    label: 'Resultado',
+                    highlight: true,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              FormulaCard(
+                title: 'Diferença final entre os regimes',
+                accentColor: kAmarelo,
+                lines: [
+                  const FormulaLine(
+                    'ΔM = M_c(T) − M_s(T)',
+                    label: 'Definição',
+                  ),
+                  FormulaLine(
+                    'ΔM = ${formatMoeda(mcT)} − ${formatMoeda(msT)}',
+                    label: 'Substituindo os valores calculados',
+                  ),
+                  FormulaLine(
+                    'ΔM = ${formatMoeda(diff)}',
+                    label: 'Resultado',
+                    highlight: true,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
               FormulaCard(
                 title: 'Área entre as curvas',
                 accentColor: kAmarelo,
@@ -164,17 +237,23 @@ class GraficosScreen extends StatelessWidget {
                   ),
                   FormulaLine(
                     'A = $pTexto·[ (e^($rTexto·$tTexto) − 1)/$rTexto '
-                    '− $tTexto − $rTexto·$tTexto²/2 ]',
+                        '− $tTexto − $rTexto·$tTexto²/2 ]',
                     label: 'Substituindo os parâmetros atuais',
                   ),
                   FormulaLine(
+                    'e^($rTexto·$tTexto) ≈ ${formatDec(expValor, 4)}   '
+                        '→ termo linear = ${formatMoeda(termoLinear)}, '
+                        'termo quadrático = ${formatMoeda(termoQuadratico)}',
+                    label: 'Calculando cada termo',
+                  ),
+                  FormulaLine(
                     'A = ${formatMoeda(area)}',
-                    label: 'Valor numérico',
+                    label: 'Resultado',
                     highlight: true,
                   ),
                 ],
                 interpretation:
-                    'Geometricamente, a área é a região amarela entre as duas '
+                'Geometricamente, a área é a região amarela entre as duas '
                     'curvas. Ela mede quanto o regime composto rende a mais que '
                     'o simples, somado e acumulado ao longo de todo o período T '
                     '— não apenas no instante final, mas a cada momento.',

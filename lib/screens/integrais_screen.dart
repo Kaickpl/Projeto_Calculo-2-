@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -40,6 +42,12 @@ class IntegraisScreen extends StatelessWidget {
         final rTexto = formatDec(r, 3);
         final pTexto = p.toStringAsFixed(0);
         final tTexto = model.periodoT.toString();
+
+        // ─────── etapas intermediárias do cálculo ───────
+        final double termoLinear = p * t; // P·T
+        final double termoQuadratico = p * r * t * t / 2; // P·r·T²/2
+        final double expoente = r * t; // r·T
+        final double expValor = math.exp(expoente); // e^(r·T)
 
         return SingleChildScrollView(
           padding: const EdgeInsets.all(16),
@@ -157,16 +165,24 @@ class IntegraisScreen extends StatelessWidget {
                 accentColor: kAzul,
                 lines: [
                   const FormulaLine(
-                    '∫₀ᵀ P·(1 + r·t) dt = P·[ t + r·t²/2 ]₀ᵀ',
-                    label: 'Passo a passo',
+                    '∫₀ᵀ P·(1 + r·t) dt',
+                    label: 'Definição',
                   ),
                   const FormulaLine(
-                    '= P·T + P·r·T²/2',
-                    label: 'Resultado analítico',
+                    '= P·[ t + r·t²/2 ]₀ᵀ = P·T + P·r·T²/2',
+                    label: 'Resolvendo a integral',
+                  ),
+                  FormulaLine(
+                    '= $pTexto·$tTexto + $pTexto·$rTexto·$tTexto²/2',
+                    label: 'Substituindo P, r e T',
+                  ),
+                  FormulaLine(
+                    '= ${formatMoeda(termoLinear)} + ${formatMoeda(termoQuadratico)}',
+                    label: 'Calculando cada termo',
                   ),
                   FormulaLine(
                     '= ${formatMoeda(intS)}',
-                    label: 'Valor numérico',
+                    label: 'Resultado',
                     highlight: true,
                   ),
                 ],
@@ -177,17 +193,25 @@ class IntegraisScreen extends StatelessWidget {
                 accentColor: kVerde,
                 lines: [
                   const FormulaLine(
-                    '∫₀ᵀ P·e^(r·t) dt = (P/r)·e^(r·t) |₀ᵀ',
-                    label: 'Passo a passo',
+                    '∫₀ᵀ P·e^(r·t) dt',
+                    label: 'Definição',
                   ),
                   const FormulaLine(
-                    '= P·(e^(r·T) − 1)/r',
-                    label: 'Resultado analítico',
+                    '= (P/r)·e^(r·t) |₀ᵀ = P·(e^(r·T) − 1)/r',
+                    label: 'Resolvendo a integral',
                   ),
                   FormulaLine(
-                    '= $pTexto·(e^($rTexto·$tTexto) − 1)/$rTexto '
-                    '= ${formatMoeda(intC)}',
-                    label: 'Valor numérico',
+                    '= $pTexto·(e^($rTexto·$tTexto) − 1)/$rTexto',
+                    label: 'Substituindo P, r e T',
+                  ),
+                  FormulaLine(
+                    'e^($rTexto·$tTexto) ≈ ${formatDec(expValor, 4)}',
+                    label: 'Calculando a exponencial',
+                  ),
+                  FormulaLine(
+                    '= $pTexto·(${formatDec(expValor, 4)} − 1)/$rTexto '
+                        '= ${formatMoeda(intC)}',
+                    label: 'Resultado',
                     highlight: true,
                   ),
                 ],
@@ -202,14 +226,26 @@ class IntegraisScreen extends StatelessWidget {
                     label: 'Definição',
                   ),
                   FormulaLine(
-                    'M̄_s = ${formatMoeda(medS)}        '
+                    'M̄_s = (1/$tTexto)·${formatMoeda(intS)}',
+                    label: 'Substituindo (regime simples)',
+                  ),
+                  FormulaLine(
+                    'M̄_s = ${formatMoeda(medS)}',
+                    label: 'Resultado (simples)',
+                    highlight: true,
+                  ),
+                  FormulaLine(
+                    'M̄_c = (1/$tTexto)·${formatMoeda(intC)}',
+                    label: 'Substituindo (regime composto)',
+                  ),
+                  FormulaLine(
                     'M̄_c = ${formatMoeda(medC)}',
-                    label: 'Com os parâmetros atuais',
+                    label: 'Resultado (composto)',
                     highlight: true,
                   ),
                 ],
                 interpretation:
-                    'A integral representa o montante total acumulado ao longo '
+                'A integral representa o montante total acumulado ao longo '
                     'do período; dividida por T, dá o saldo médio mantido. '
                     'É o valor constante que, integrado de 0 a T, produziria a '
                     'mesma área que a função real.',

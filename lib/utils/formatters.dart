@@ -10,6 +10,7 @@ final NumberFormat _moeda = NumberFormat.currency(
 
 final NumberFormat _dec2 = NumberFormat('#,##0.00', 'pt_BR');
 final NumberFormat _dec3 = NumberFormat('#,##0.000', 'pt_BR');
+final NumberFormat _dec4 = NumberFormat('#,##0.0000', 'pt_BR');
 
 /// "R$ 1.234,56"
 String formatMoeda(double v) => _moeda.format(v);
@@ -19,6 +20,7 @@ String formatNum(double v) => _dec2.format(v);
 
 /// Decimal com [casas] dígitos (vírgula como separador).
 String formatDec(double v, [int casas = 2]) {
+  if (casas == 4) return _dec4.format(v);
   if (casas == 3) return _dec3.format(v);
   return _dec2.format(v);
 }

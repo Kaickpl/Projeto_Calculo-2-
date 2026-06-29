@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -22,7 +24,7 @@ class DerivadasScreen extends StatelessWidget {
         final double dSimples = model.derivadaSimples(); // P*r constante
         final double dCompostaT = model.derivadaComposta(t);
         final double razao =
-            dSimples == 0 ? 0 : dCompostaT / dSimples; // = e^(rT)
+        dSimples == 0 ? 0 : dCompostaT / dSimples; // = e^(rT)
 
         final retaSimples = <FlSpot>[
           FlSpot(0, dSimples),
@@ -40,6 +42,11 @@ class DerivadasScreen extends StatelessWidget {
         final rTexto = formatDec(r, 3);
         final pTexto = p.toStringAsFixed(0);
         final tTexto = model.periodoT.toString();
+
+        // ─────── etapas intermediárias do cálculo (juros compostos) ───────
+        final double expoente = r * t; // r·t
+        final double expValor = math.exp(expoente); // e^(r·t)
+        final double prValor = p * r; // P·r
 
         return SingleChildScrollView(
           padding: const EdgeInsets.all(16),
@@ -145,17 +152,25 @@ class DerivadasScreen extends StatelessWidget {
                 accentColor: kAzul,
                 lines: [
                   const FormulaLine(
-                    "M_s(t) = P·(1 + r·t)   ⇒   M_s'(t) = P·r",
-                    label: 'Regra: derivada de função afim',
+                    'M_s(t) = P·(1 + r·t)',
+                    label: 'Função original',
+                  ),
+                  const FormulaLine(
+                    "M_s'(t) = P·r",
+                    label: "Regra: derivada de função afim (a + b·t)' = b",
                   ),
                   FormulaLine(
-                    "M_s'(t) = $pTexto·$rTexto = ${formatMoeda(dSimples)}/ano",
-                    label: 'Com os parâmetros atuais',
+                    "M_s'(t) = $pTexto · $rTexto",
+                    label: 'Substituindo P e r pelos valores atuais',
+                  ),
+                  FormulaLine(
+                    "M_s'(t) = ${formatMoeda(dSimples)}/ano",
+                    label: 'Resultado',
                     highlight: true,
                   ),
                 ],
                 interpretation:
-                    'Crescimento linear: a mesma taxa sempre. A derivada é '
+                'Crescimento linear: a mesma taxa sempre. A derivada é '
                     'constante, então o montante aumenta a um ritmo fixo, '
                     'independente do tempo já decorrido.',
               ),
@@ -165,22 +180,32 @@ class DerivadasScreen extends StatelessWidget {
                 accentColor: kVerde,
                 lines: [
                   const FormulaLine(
-                    "M_c(t) = P·e^(r·t)   ⇒   M_c'(t) = P·r·e^(r·t)",
-                    label: 'Regra da cadeia em e^(r·t)',
+                    'M_c(t) = P·e^(r·t)',
+                    label: 'Função original',
                   ),
                   const FormulaLine(
-                    'd/dt e^(r·t) = r·e^(r·t)   (derivada interna = r)',
-                    label: 'Detalhe da regra da cadeia',
+                    "M_c'(t) = P·r·e^(r·t)",
+                    label: 'Regra da cadeia: d/dt e^(r·t) = r·e^(r·t)',
                   ),
                   FormulaLine(
-                    "M_c'($tTexto) = $pTexto·$rTexto·e^($rTexto·$tTexto) "
-                    '= ${formatMoeda(dCompostaT)}/ano',
-                    label: 'Com os parâmetros atuais',
+                    "M_c'($tTexto) = $pTexto · $rTexto · e^($rTexto·$tTexto)",
+                    label: 'Substituindo P, r e t = T',
+                  ),
+                  FormulaLine(
+                    'e^($rTexto·$tTexto) = e^${formatDec(expoente, 3)} '
+                        '≈ ${formatDec(expValor, 4)}',
+                    label: 'Calculando o expoente e a exponencial',
+                  ),
+                  FormulaLine(
+                    "M_c'($tTexto) = ${formatMoeda(prValor)} "
+                        '× ${formatDec(expValor, 4)} '
+                        '= ${formatMoeda(dCompostaT)}/ano',
+                    label: 'Resultado',
                     highlight: true,
                   ),
                 ],
                 interpretation:
-                    'Juros sobre juros: a derivada cresce junto com o montante. '
+                'Juros sobre juros: a derivada cresce junto com o montante. '
                     'Como M_c\'(t) é proporcional ao próprio M_c(t), quanto '
                     'maior o saldo, mais rápido ele cresce — crescimento '
                     'exponencial.',
