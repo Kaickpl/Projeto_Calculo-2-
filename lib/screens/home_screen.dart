@@ -1,75 +1,69 @@
 import 'package:flutter/material.dart';
-import '../widgets/formulario_entrada.dart';
-import '../widgets/resumo_metricas.dart';
-import 'tela_graficos.dart';
-import 'tela_tabela.dart';
-import 'tela_calculo.dart';
 
-class HomeScreen extends StatelessWidget {
+import '../main.dart' show kAzul;
+import '../widgets/slider_controls.dart';
+import 'derivadas_screen.dart';
+import 'graficos_screen.dart';
+import 'integrais_screen.dart';
+
+/// Tela principal: AppBar + sliders globais no topo + conteúdo da aba +
+/// BottomNavigationBar com 3 abas. Usa IndexedStack para preservar cada aba.
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  int _index = 0;
+
+  static const List<Widget> _screens = [
+    GraficosScreen(),
+    DerivadasScreen(),
+    IntegraisScreen(),
+  ];
+
+  @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 3,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: const [
-              Text(
-                'Calculadora de Financiamento',
-                style: TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              Text(
-                'Projeto Cálculo 2',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Color(0xFF888780),
-                ),
-              ),
-            ],
-          ),
-          bottom: const TabBar(
-            tabs: [
-              Tab(text: 'Gráficos'),
-              Tab(text: 'Parcelas'),
-              Tab(text: 'Cálculos'),
-            ],
-            labelStyle: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-            ),
-            unselectedLabelStyle: TextStyle(
-              fontSize: 13,
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Cálculo 2 — Juros & Cálculo'),
+      ),
+      body: Column(
+        children: [
+          const SliderControls(),
+          Expanded(
+            child: IndexedStack(
+              index: _index,
+              children: _screens,
             ),
           ),
-        ),
-        body: NestedScrollView(
-          headerSliverBuilder: (context, innerBoxIsScrolled) {
-            return [
-              SliverToBoxAdapter(
-                child: Column(
-                  children: const [
-                    FormularioEntrada(),
-                    ResumoMetricas(),
-                    SizedBox(height: 12),
-                  ],
-                ),
-              ),
-            ];
-          },
-          body: const TabBarView(
-            children: [
-              TelaGraficos(),
-              TelaTabelaParcelas(),
-              TelaCalculo(),
-            ],
+        ],
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _index,
+        onTap: (i) => setState(() => _index = i),
+        type: BottomNavigationBarType.fixed,
+        selectedItemColor: kAzul,
+        unselectedItemColor: Colors.grey.shade500,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.area_chart_outlined),
+            activeIcon: Icon(Icons.area_chart),
+            label: 'Gráficos e Área',
           ),
-        ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.trending_up_outlined),
+            activeIcon: Icon(Icons.trending_up),
+            label: 'Derivadas',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.functions_outlined),
+            activeIcon: Icon(Icons.functions),
+            label: 'Integrais',
+          ),
+        ],
       ),
     );
   }

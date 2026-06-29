@@ -1,61 +1,103 @@
 import 'package:flutter/material.dart';
 
+/// Card de métrica: ponto colorido + título + valor (fonte monospace) + legenda.
 class MetricCard extends StatelessWidget {
-  final String label;
+  final String title;
   final String value;
+  final Color color;
   final String? subtitle;
-  final Color valueColor;
 
   const MetricCard({
     super.key,
-    required this.label,
+    required this.title,
     required this.value,
+    required this.color,
     this.subtitle,
-    this.valueColor = const Color(0xFF1A1A1A),
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF1F1ED),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label.toUpperCase(),
-            style: const TextStyle(
-              fontSize: 10,
-              letterSpacing: 0.5,
-              color: Color(0xFF888780),
-              fontWeight: FontWeight.w500,
+    return Card(
+      elevation: 2,
+      margin: EdgeInsets.zero,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 10,
+                  height: 10,
+                  decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
+                  ),
+                ),
+              ],
             ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 17,
-              fontWeight: FontWeight.w600,
-              color: valueColor,
+            const SizedBox(height: 8),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                value,
+                style: TextStyle(
+                  fontFamily: 'monospace',
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
+              ),
             ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          if (subtitle != null) ...[
-            const SizedBox(height: 3),
-            Text(
-              subtitle!,
-              style: const TextStyle(fontSize: 11, color: Color(0xFF888780)),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
+            if (subtitle != null) ...[
+              const SizedBox(height: 4),
+              Text(
+                subtitle!,
+                style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+              ),
+            ],
           ],
-        ],
+        ),
       ),
     );
+  }
+}
+
+/// Organiza uma lista de cards em linhas de 2 colunas com alturas iguais.
+class MetricGrid extends StatelessWidget {
+  final List<Widget> cards;
+  const MetricGrid({super.key, required this.cards});
+
+  @override
+  Widget build(BuildContext context) {
+    final rows = <Widget>[];
+    for (var i = 0; i < cards.length; i += 2) {
+      final left = cards[i];
+      final hasRight = i + 1 < cards.length;
+      rows.add(
+        IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(child: left),
+              const SizedBox(width: 12),
+              Expanded(
+                child: hasRight ? cards[i + 1] : const SizedBox.shrink(),
+              ),
+            ],
+          ),
+        ),
+      );
+      if (i + 2 < cards.length) rows.add(const SizedBox(height: 12));
+    }
+    return Column(children: rows);
   }
 }

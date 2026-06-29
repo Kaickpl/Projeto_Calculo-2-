@@ -1,16 +1,37 @@
 import 'package:intl/intl.dart';
 
-class Formatters {
-  static final _currency = NumberFormat.currency(
-    locale: 'pt_BR',
-    symbol: 'R\$',
-    decimalDigits: 2,
-  );
+/// Formatação de valores no padrão brasileiro (pt_BR).
 
-  static final _pct = NumberFormat('0.00', 'pt_BR');
-  static final _num = NumberFormat('#,##0.00', 'pt_BR');
+final NumberFormat _moeda = NumberFormat.currency(
+  locale: 'pt_BR',
+  symbol: 'R\$',
+  decimalDigits: 2,
+);
 
-  static String moeda(double v) => _currency.format(v);
-  static String pct(double v) => '${_pct.format(v)}%';
-  static String numero(double v) => _num.format(v);
+final NumberFormat _dec2 = NumberFormat('#,##0.00', 'pt_BR');
+final NumberFormat _dec3 = NumberFormat('#,##0.000', 'pt_BR');
+
+/// "R$ 1.234,56"
+String formatMoeda(double v) => _moeda.format(v);
+
+/// "1.234,56"
+String formatNum(double v) => _dec2.format(v);
+
+/// Decimal com [casas] dígitos (vírgula como separador).
+String formatDec(double v, [int casas = 2]) {
+  if (casas == 3) return _dec3.format(v);
+  return _dec2.format(v);
 }
+
+/// Versão compacta para rótulos de eixo: "1,2k", "3,4M".
+String formatCompacto(double v) {
+  final abs = v.abs();
+  if (abs >= 1000000) return '${_dec1.format(v / 1000000)}M';
+  if (abs >= 1000) return '${_dec1.format(v / 1000)}k';
+  return v.toStringAsFixed(0);
+}
+
+final NumberFormat _dec1 = NumberFormat('#,##0.0', 'pt_BR');
+
+/// Taxa em percentual: 0.105 -> "10,5%"
+String formatPercent(double r) => '${_dec1.format(r * 100)}%';
