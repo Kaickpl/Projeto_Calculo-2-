@@ -135,13 +135,13 @@ class IntegraisScreen extends StatelessWidget {
                     title: '∫₀ᵀ M_s(t) dt',
                     value: formatMoeda(intS),
                     color: kAzul,
-                    subtitle: 'acumulado simples',
+                    subtitle: 'Acumulado simples',
                   ),
                   MetricCard(
                     title: '∫₀ᵀ M_c(t) dt',
                     value: formatMoeda(intC),
                     color: kVerde,
-                    subtitle: 'acumulado composto',
+                    subtitle: 'Acumulado composto',
                   ),
                   MetricCard(
                     title: 'Montante médio simples',
